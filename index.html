@@ -5,11 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kruskal's Algorithm — MST Visualizer & Explained</title>
     <meta name="description" content="Learn Kruskal's Minimum Spanning Tree algorithm with interactive visualization, step-by-step explanation, complexity analysis, and real-world applications.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <nav class="top-nav">
+        <div class="nav-brand">Kruskal MST</div>
+        <div class="nav-links">
+            <a href="#what-is">Overview</a>
+            <a href="#how-it-works">Steps</a>
+            <a href="#complexity">Complexity</a>
+            <a href="#test-cases">Test Cases</a>
+            <a href="#applications">Applications</a>
+            <a href="#visualizer">Visualizer</a>
+        </div>
+    </nav>
     <!-- Hero Header -->
     <header id="hero">
         <div class="hero-bg-shapes">
@@ -19,6 +28,12 @@
         </div>
         <div class="hero-content">
             <div class="hero-badge">Lab Program — Data Structures</div>
+            <div class="hero-pills">
+                <span class="hero-pill">Offline Ready</span>
+                <span class="hero-pill">Preset Driven</span>
+                <span class="hero-pill">Step Controls</span>
+                <span class="hero-pill">Accessible</span>
+            </div>
             <h1>Kruskal's Algorithm</h1>
             <p class="hero-subtitle">Finding the Minimum Spanning Tree using a Greedy approach with Union-Find</p>
             <div class="hero-stats">
@@ -42,7 +57,7 @@
                     <span class="stat-label">Published</span>
                 </div>
             </div>
-            <a href="#visualizer" class="hero-cta">▶ Try the Visualizer</a>
+            <a href="#visualizer" class="hero-cta">Try the Visualizer</a>
         </div>
     </header>
 
@@ -56,17 +71,17 @@
             </div>
             <div class="explanation-grid">
                 <div class="explanation-card">
-                    <div class="card-icon">🌳</div>
+                    <div class="card-icon">MST</div>
                     <h3>Minimum Spanning Tree</h3>
                     <p>A subset of edges that connects all vertices in a weighted, undirected graph with the <strong>minimum possible total weight</strong>, without forming any cycles.</p>
                 </div>
                 <div class="explanation-card">
-                    <div class="card-icon">🔀</div>
+                    <div class="card-icon">GR</div>
                     <h3>Greedy Approach</h3>
                     <p>Kruskal's algorithm sorts all edges by weight and picks the <strong>smallest edge</strong> that doesn't form a cycle. It repeats until V−1 edges are selected.</p>
                 </div>
                 <div class="explanation-card">
-                    <div class="card-icon">🔗</div>
+                    <div class="card-icon">UF</div>
                     <h3>Union-Find (DSU)</h3>
                     <p>Uses the <strong>Disjoint Set Union</strong> data structure with path compression and union by rank to efficiently detect cycles in near-constant time.</p>
                 </div>
@@ -158,7 +173,7 @@
 
                 <div class="complexity-cards">
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="--card-accent: #60a5fa;">⏱</div>
+                        <div class="stat-card-icon" style="--card-accent: #60a5fa;">TC</div>
                         <div class="stat-card-body">
                             <div class="stat-card-title">Best Case</div>
                             <div class="stat-card-value">O(E log E)</div>
@@ -166,7 +181,7 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="--card-accent: #f87171;">⏱</div>
+                        <div class="stat-card-icon" style="--card-accent: #f87171;">TC</div>
                         <div class="stat-card-body">
                             <div class="stat-card-title">Worst Case</div>
                             <div class="stat-card-value">O(E log E)</div>
@@ -174,7 +189,7 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-icon" style="--card-accent: #34d399;">💾</div>
+                        <div class="stat-card-icon" style="--card-accent: #34d399;">SC</div>
                         <div class="stat-card-body">
                             <div class="stat-card-title">Space</div>
                             <div class="stat-card-value">O(V + E)</div>
@@ -223,83 +238,291 @@
                         </tr>
                         <tr>
                             <td>Works on Disconnected?</td>
-                            <td class="highlight-col">✅ Yes (finds MSF)</td>
-                            <td>❌ No</td>
+                            <td class="highlight-col">Yes (finds MSF)</td>
+                            <td>No</td>
                         </tr>
                         <tr>
                             <td>Needs Sorting?</td>
-                            <td class="highlight-col">✅ Yes</td>
-                            <td>❌ No</td>
+                            <td class="highlight-col">Yes</td>
+                            <td>No</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- SECTION: Applications with Radial Chart -->
-        <section id="applications" class="section">
+        <!-- SECTION: Test Cases -->
+        <section id="test-cases" class="section">
             <div class="section-header">
                 <span class="section-number">05</span>
-                <h2>Real-World Applications</h2>
+                <h2>Kruskal's Algorithm — Test Cases</h2>
             </div>
-            <div class="apps-grid">
-                <div class="app-card">
-                    <div class="app-icon">🌐</div>
-                    <h4>Network Design</h4>
-                    <p>Laying cables, optical fiber networks with minimum total wiring cost.</p>
-                    <div class="app-bar" style="--app-pct: 95%; --app-color: #60a5fa;"><span>95% relevance</span></div>
+
+            <div class="testcases-grid">
+                <div class="testcase-card">
+                    <div class="testcase-title">Test Case 1 — Simple Triangle (3 nodes)</div>
+                    <div class="testcase-block">Nodes: A, B, C<br>Edges: A-B=1, B-C=2, A-C=4</div>
+                    <div class="testcase-steps">Steps: Pick A-B (1) → Pick B-C (2) → Skip A-C (cycle)</div>
+                    <div class="testcase-result">MST: A-B-C | Total Cost: 3</div>
                 </div>
-                <div class="app-card">
-                    <div class="app-icon">🗺️</div>
-                    <h4>Road Planning</h4>
-                    <p>Connecting cities with minimum road construction cost.</p>
-                    <div class="app-bar" style="--app-pct: 88%; --app-color: #a78bfa;"><span>88% relevance</span></div>
+                <div class="testcase-card">
+                    <div class="testcase-title">Test Case 2 — Standard 4-Node Graph</div>
+                    <div class="testcase-block">Nodes: A, B, C, D<br>Edges: A-B=1, A-C=3, B-C=2, B-D=4, C-D=2</div>
+                    <div class="testcase-steps">Steps: Pick A-B (1) → Pick B-C (2) → Pick C-D (2) → Skip B-D (cycle)</div>
+                    <div class="testcase-result">MST: A-B-C-D | Total Cost: 5</div>
                 </div>
-                <div class="app-card">
-                    <div class="app-icon">🖥️</div>
-                    <h4>Cluster Analysis</h4>
-                    <p>Used in machine learning for single-linkage hierarchical clustering.</p>
-                    <div class="app-bar" style="--app-pct: 80%; --app-color: #34d399;"><span>80% relevance</span></div>
+                <div class="testcase-card">
+                    <div class="testcase-title">Test Case 3 — All Equal Weights</div>
+                    <div class="testcase-block">Nodes: 1, 2, 3, 4<br>Edges: 1-2=5, 2-3=5, 3-4=5, 1-4=5, 1-3=5</div>
+                    <div class="testcase-steps">Steps: Any 3 edges can form the MST (no cycles allowed)</div>
+                    <div class="testcase-result">MST Cost: 15 (multiple valid MSTs)</div>
                 </div>
-                <div class="app-card">
-                    <div class="app-icon">💡</div>
-                    <h4>Circuit Design</h4>
-                    <p>Minimizing wire length in VLSI chip layout and PCB routing.</p>
-                    <div class="app-bar" style="--app-pct: 75%; --app-color: #fbbf24;"><span>75% relevance</span></div>
+                <div class="testcase-card">
+                    <div class="testcase-title">Test Case 4 — Disconnected Graph</div>
+                    <div class="testcase-block">Nodes: A, B, C, D<br>Edges: A-B=2, C-D=3 (no edges between the pairs)</div>
+                    <div class="testcase-steps">Result: No single MST is possible</div>
+                    <div class="testcase-result">Algorithm returns a spanning forest</div>
                 </div>
+                <div class="testcase-card">
+                    <div class="testcase-title">Test Case 5 — Dense Graph (5 nodes)</div>
+                    <div class="testcase-block">Nodes: 1,2,3,4,5<br>Edges: 1-2=2, 1-3=3, 2-3=1, 2-4=4, 3-5=5, 4-5=1, 3-4=2</div>
+                    <div class="testcase-steps">Sorted: 2-3=1, 4-5=1, 1-2=2, 3-4=2, 1-3=3, 2-4=4, 3-5=5</div>
+                    <div class="testcase-result">MST Cost: 6 (edges: 2-3, 4-5, 1-2, 3-4)</div>
+                </div>
+                <div class="testcase-card">
+                    <div class="testcase-title">Test Case 6 — Linear / Path Graph</div>
+                    <div class="testcase-block">Nodes: A-B-C-D-E<br>Edges: A-B=5, B-C=3, C-D=8, D-E=2</div>
+                    <div class="testcase-steps">Result: Only one spanning tree possible</div>
+                    <div class="testcase-result">MST Cost: 18</div>
+                </div>
+            </div>
+
+            <div class="rules-card">
+                <h3>Key Rules to Remember</h3>
+                <table class="rules-table">
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Behavior</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>N nodes</td>
+                            <td>MST has exactly N − 1 edges</td>
+                        </tr>
+                        <tr>
+                            <td>Cycle formed</td>
+                            <td>Skip that edge</td>
+                        </tr>
+                        <tr>
+                            <td>Disconnected graph</td>
+                            <td>Result is a forest, not a single MST</td>
+                        </tr>
+                        <tr>
+                            <td>Tie in weights</td>
+                            <td>Either edge can be chosen</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION: Real-World Applications -->
+        <section id="applications" class="section">
+            <div class="section-header">
+                <span class="section-number">06</span>
+                <h2>Kruskal's Algorithm — Real-World Applications</h2>
+            </div>
+
+            <div class="apps-list">
+                <div class="app-item">
+                    <div class="app-icon">NET</div>
+                    <div class="app-body">
+                        <h4>Network Design (Computer Networks)</h4>
+                        <p>Connect computers/servers with minimum cable length for LAN/WAN and data centers.</p>
+                        <div class="app-meta">Example: Connect office floors using the least ethernet cable.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">PWR</div>
+                    <div class="app-body">
+                        <h4>Electrical Power Grids</h4>
+                        <p>Lay power lines between cities and substations at minimum cost.</p>
+                        <div class="app-meta">Example: Connect villages to the grid using minimum wire.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">H2O</div>
+                    <div class="app-body">
+                        <h4>Water Supply & Pipeline Systems</h4>
+                        <p>Design pipelines across neighborhoods with minimal pipe length.</p>
+                        <div class="app-meta">Example: Plan municipal water pipelines across wards.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">RD</div>
+                    <div class="app-body">
+                        <h4>Road & Transportation Planning</h4>
+                        <p>Connect cities and hubs with minimum total road distance or cost.</p>
+                        <div class="app-meta">Example: Plan highways between state capitals cheaply.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">AIR</div>
+                    <div class="app-body">
+                        <h4>Airlines & Logistics</h4>
+                        <p>Build a minimum-cost route network for flights and deliveries.</p>
+                        <div class="app-meta">Example: Connect cities with cheapest flight routes.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">BIO</div>
+                    <div class="app-body">
+                        <h4>Biology & Bioinformatics</h4>
+                        <p>Cluster genes and build phylogenetic trees using MST-based clustering.</p>
+                        <div class="app-meta">Example: Group related species from DNA similarity.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">IMG</div>
+                    <div class="app-body">
+                        <h4>Image Processing & Computer Vision</h4>
+                        <p>Segment images by grouping similar pixels using MST clustering.</p>
+                        <div class="app-meta">Example: Isolate tumor regions in MRI scans.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">TEL</div>
+                    <div class="app-body">
+                        <h4>Telecommunication Networks</h4>
+                        <p>Lay fiber optics and connect towers at minimum cost.</p>
+                        <div class="app-meta">Example: Connect 5G towers with minimum fiber.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">ML</div>
+                    <div class="app-body">
+                        <h4>Machine Learning — Clustering</h4>
+                        <p>Perform hierarchical clustering and customer segmentation.</p>
+                        <div class="app-meta">Example: Group similar customers for recommendations.</div>
+                    </div>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon">GAME</div>
+                    <div class="app-body">
+                        <h4>Game Development</h4>
+                        <p>Generate connected maps and efficient NPC path networks.</p>
+                        <div class="app-meta">Example: Create connected cave systems procedurally.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="apps-summary">
+                <h3>Quick Summary Table</h3>
+                <table class="apps-summary-table">
+                    <thead>
+                        <tr>
+                            <th>Domain</th>
+                            <th>Real Entity</th>
+                            <th>Edge Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Networking</td>
+                            <td>Computers / Servers</td>
+                            <td>Cable length / latency</td>
+                        </tr>
+                        <tr>
+                            <td>Power Grid</td>
+                            <td>Cities / Substations</td>
+                            <td>Wire cost</td>
+                        </tr>
+                        <tr>
+                            <td>Roads</td>
+                            <td>Cities / Towns</td>
+                            <td>Distance / cost</td>
+                        </tr>
+                        <tr>
+                            <td>Water Supply</td>
+                            <td>Neighborhoods</td>
+                            <td>Pipe cost</td>
+                        </tr>
+                        <tr>
+                            <td>Airlines</td>
+                            <td>Airports</td>
+                            <td>Ticket cost / distance</td>
+                        </tr>
+                        <tr>
+                            <td>Biology</td>
+                            <td>Species / Genes</td>
+                            <td>Genetic difference</td>
+                        </tr>
+                        <tr>
+                            <td>Telecom</td>
+                            <td>Cell Towers</td>
+                            <td>Fiber cable cost</td>
+                        </tr>
+                        <tr>
+                            <td>ML Clustering</td>
+                            <td>Data Points</td>
+                            <td>Similarity distance</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
         <!-- SECTION: Interactive Visualizer -->
         <section id="visualizer" class="section">
             <div class="section-header">
-                <span class="section-number">06</span>
+                <span class="section-number">07</span>
                 <h2>Interactive Visualizer</h2>
             </div>
 
             <!-- Input Panel -->
             <div class="panel" id="input-panel">
                 <div class="panel-header">
-                    <h3>📥 Graph Input</h3>
+                    <h3>Graph Input</h3>
                 </div>
                 <div class="panel-body">
                     <div class="input-row">
                         <div class="input-group">
                             <label for="vertices">Vertices</label>
-                            <input type="number" id="vertices" min="2" max="12" value="5">
+                            <input type="number" id="vertices" min="2" max="12" value="5" aria-label="Number of vertices in the graph" aria-describedby="vertices-desc">
+                            <small id="vertices-desc">Enter 2-12 vertices</small>
                         </div>
                         <div class="input-group">
                             <label for="num-edges">Edges</label>
-                            <input type="number" id="num-edges" min="1" max="30" value="7">
+                            <input type="number" id="num-edges" min="1" max="30" value="7" aria-label="Number of edges in the graph" aria-describedby="edges-desc">
+                            <small id="edges-desc">Enter 1-30 edges</small>
                         </div>
-                        <button id="btn-generate-fields" class="btn btn-secondary" onclick="generateEdgeInputs()">Generate Fields</button>
+                        <button id="btn-generate-fields" class="btn btn-secondary" onclick="generateEdgeInputs()" aria-label="Generate input fields for edges">Generate Fields</button>
+                    </div>
+
+                    <div class="preset-row">
+                        <div class="input-group preset-group">
+                            <label for="preset-select">Preset Test Case</label>
+                            <select id="preset-select" aria-label="Select a preset test case">
+                                <option value="">Choose a test case...</option>
+                                <option value="triangle">Test 1: Simple Triangle (3 nodes)</option>
+                                <option value="standard4">Test 2: Standard 4-Node Graph</option>
+                                <option value="equalWeights">Test 3: All Equal Weights</option>
+                                <option value="disconnected">Test 4: Disconnected Graph</option>
+                                <option value="dense5">Test 5: Dense Graph (5 nodes)</option>
+                                <option value="path5">Test 6: Linear / Path Graph</option>
+                            </select>
+                        </div>
+                        <button id="btn-apply-preset" class="btn btn-outline" onclick="applyPreset()">Apply Preset</button>
                     </div>
 
                     <div id="edge-inputs-container" class="edge-inputs-container"></div>
 
                     <div class="action-row">
                         <button id="btn-load-sample" class="btn btn-outline" onclick="loadSampleGraph()">Load Sample</button>
-                        <button id="btn-run" class="btn btn-primary" onclick="runKruskal()">▶ Run Kruskal's</button>
+                        <button id="btn-run" class="btn btn-primary" onclick="runKruskal()">Run Kruskal's</button>
+                        <button id="btn-test" class="btn btn-secondary" onclick="window.runTests()" title="Run algorithm tests">Run Tests</button>
                     </div>
                 </div>
             </div>
@@ -307,17 +530,29 @@
             <!-- Algorithm Steps -->
             <div class="panel hidden" id="steps-panel">
                 <div class="panel-header">
-                    <h3>⚡ Algorithm Execution</h3>
+                    <h3>Algorithm Execution</h3>
                 </div>
                 <div class="panel-body">
                     <div id="sorted-edges" class="sorted-edges-section">
                         <h4>Sorted Edges (by weight)</h4>
                         <div id="sorted-edges-list" class="edge-chips"></div>
                     </div>
+                    <div class="playback-controls">
+                        <button id="btn-play-pause" class="btn btn-primary" onclick="togglePlayPause()">Play</button>
+                        <button id="btn-step" class="btn btn-outline" onclick="stepOnce()">Step</button>
+                        <button id="btn-reset" class="btn btn-outline" onclick="resetRun()">Reset</button>
+                        <div class="speed-control">
+                            <label for="speed-range">Speed</label>
+                            <input id="speed-range" type="range" min="200" max="1400" step="100" value="700" aria-label="Animation speed">
+                            <span id="speed-value">700 ms</span>
+                        </div>
+                        <div class="key-hint">Shortcuts: Space = Play/Pause, → = Step, R = Reset</div>
+                    </div>
                     <div id="steps-log" class="steps-log"></div>
                     <div id="result-box" class="result-box hidden">
-                        <div class="result-label">Minimum Cost of MST</div>
+                        <div id="result-label" class="result-label">Minimum Cost of MST</div>
                         <div id="result-cost" class="result-cost">0</div>
+                        <div id="result-note" class="result-note"></div>
                     </div>
 
                     <!-- Live Stats during run -->
@@ -345,7 +580,7 @@
             <!-- Graph Canvas -->
             <div class="panel hidden" id="graph-panel">
                 <div class="panel-header">
-                    <h3>🔗 Graph Visualization</h3>
+                    <h3>Graph Visualization</h3>
                 </div>
                 <div class="panel-body canvas-body">
                     <div class="canvas-legend">
@@ -365,5 +600,11 @@
     </footer>
 
     <script src="app.js"></script>
-</body>
-</html>
+    <script src="tests.js"></script>
+    <script>
+        // Add test runner function to window
+        window.runTests = function() {
+            const results = runAllTests();
+            alert(`Tests Complete!\n\nPassed: ${results.passed}\nFailed: ${results.failed}\nTotal: ${results.total}\nSuccess Rate: ${results.successRate}%\n\nCheck the browser console for detailed results.`);
+        };
+    </script>

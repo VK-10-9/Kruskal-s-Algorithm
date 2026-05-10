@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kruskal's Algorithm - Test Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e1a;
+            color: #f1f5f9;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; color: #60a5fa; }
+        .test-controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .test-results {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.8rem; font-weight: 900; margin: 5px 0; }
+        .stat-label { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; }
+        .test-suite { margin-top: 20px; }
+        .suite-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #a78bfa;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-left: 3px solid #a78bfa;
+            padding-left: 10px;
+        }
+        .test-item {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            border-left: 3px solid;
+        }
+        .test-pass {
+            background: rgba(52, 211, 153, 0.08);
+            border-color: #34d399;
+            color: #34d399;
+        }
+        .test-fail {
+            background: rgba(248, 113, 113, 0.08);
+            border-color: #f87171;
+            color: #f87171;
+        }
+        .loading { text-align: center; padding: 20px; color: #94a3b8; }
+        .spinner {
+            border: 3px solid rgba(96, 165, 250, 0.2);
+            border-top: 3px solid #60a5fa;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .footer { text-align: center; margin-top: 30px; color: #64748b; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Kruskal's Algorithm - Test Suite</h1>
+        
+        <div class="test-controls">
+            <button onclick="runTestsUI()">Run All Tests</button>
+            <button onclick="clearResults()" style="background: #64748b;">Clear Results</button>
+        </div>
+
+        <div id="results" class="test-results" style="display: none;">
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Running tests...</p>
+            </div>
+
+            <div id="content" style="display: none;">
+                <div class="summary">
+                    <div class="stat-box">
+                        <div class="stat-label">Passed</div>
+                        <div class="stat-value" id="pass-count">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Failed</div>
+                        <div class="stat-value" id="fail-count">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value" id="total-count">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-value" id="success-rate">0%</div>
+                    </div>
+                </div>
+                <div id="details"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Kruskal's MST Algorithm Visualizer - Test Suite</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="tests.js"></script>
+    <script>
+        function runTestsUI() {
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = document.getElementById('loading');
+            const contentDiv = document.getElementById('content');
+            const detailsDiv = document.getElementById('details');
+
+            resultsDiv.style.display = 'block';
+            loadingDiv.style.display = 'block';
+            contentDiv.style.display = 'none';
+            detailsDiv.innerHTML = '';
+
+            // Run tests with a slight delay to show loading state
+            setTimeout(() => {
+                const results = runAllTests();
+                
+                // Update summary
+                document.getElementById('pass-count').textContent = results.passed;
+                document.getElementById('fail-count').textContent = results.failed;
+                document.getElementById('total-count').textContent = results.total;
+                document.getElementById('success-rate').textContent = results.successRate + '%';
+
+                // Display details by suite
+                const suites = {};
+                results.details.forEach(test => {
+                    const suite = test.message.split(':')[0] || 'General';
+                    if (!suites[suite]) suites[suite] = [];
+                    suites[suite].push(test);
+                });
+
+                for (const [suite, tests] of Object.entries(suites)) {
+                    const suiteTitle = document.createElement('div');
+                    suiteTitle.className = 'suite-title';
+                    suiteTitle.textContent = suite || 'Tests';
+                    detailsDiv.appendChild(suiteTitle);
+
+                    tests.forEach(test => {
+                        const item = document.createElement('div');
+                        item.className = `test-item test-${test.status.toLowerCase()}`;
+                        item.innerHTML = `<strong>${test.status}:</strong> ${test.message}`;
+                        detailsDiv.appendChild(item);
+                    });
+                }
+
+                loadingDiv.style.display = 'none';
+                contentDiv.style.display = 'block';
+            }, 300);
+        }
+
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('details').innerHTML = '';
+        }
+
+        // Auto-run tests on page load if requested
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('autorun') === 'true') {
+            window.addEventListener('load', runTestsUI);
+        }
+    </script>
+</body>
+</html>
