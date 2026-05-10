@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kruskal's Algorithm — MST Visualizer & Explained</title>
+    <meta name="description" content="Learn Kruskal's Minimum Spanning Tree algorithm with interactive visualization, step-by-step explanation, complexity analysis, and real-world applications.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Hero Header -->
+    <header id="hero">
+        <div class="hero-bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">Lab Program — Data Structures</div>
+            <h1>Kruskal's Algorithm</h1>
+            <p class="hero-subtitle">Finding the Minimum Spanning Tree using a Greedy approach with Union-Find</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-value">O(E log E)</span>
+                    <span class="stat-label">Time Complexity</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-value">O(V + E)</span>
+                    <span class="stat-label">Space Complexity</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-value">Greedy</span>
+                    <span class="stat-label">Strategy</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="stat-value">1956</span>
+                    <span class="stat-label">Published</span>
+                </div>
+            </div>
+            <a href="#visualizer" class="hero-cta">▶ Try the Visualizer</a>
+        </div>
+    </header>
+
+    <main id="app-main">
+
+        <!-- SECTION: What is Kruskal's Algorithm -->
+        <section id="what-is" class="section">
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2>What is Kruskal's Algorithm?</h2>
+            </div>
+            <div class="explanation-grid">
+                <div class="explanation-card">
+                    <div class="card-icon">🌳</div>
+                    <h3>Minimum Spanning Tree</h3>
+                    <p>A subset of edges that connects all vertices in a weighted, undirected graph with the <strong>minimum possible total weight</strong>, without forming any cycles.</p>
+                </div>
+                <div class="explanation-card">
+                    <div class="card-icon">🔀</div>
+                    <h3>Greedy Approach</h3>
+                    <p>Kruskal's algorithm sorts all edges by weight and picks the <strong>smallest edge</strong> that doesn't form a cycle. It repeats until V−1 edges are selected.</p>
+                </div>
+                <div class="explanation-card">
+                    <div class="card-icon">🔗</div>
+                    <h3>Union-Find (DSU)</h3>
+                    <p>Uses the <strong>Disjoint Set Union</strong> data structure with path compression and union by rank to efficiently detect cycles in near-constant time.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: How It Works (Steps) -->
+        <section id="how-it-works" class="section">
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2>How It Works — Step by Step</h2>
+            </div>
+            <div class="steps-timeline">
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="--dot-color: #60a5fa;">1</div>
+                    <div class="timeline-content">
+                        <h4>Sort All Edges</h4>
+                        <p>Arrange all edges in non-decreasing order of their weight using a sorting algorithm (O(E log E)).</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="--dot-color: #a78bfa;">2</div>
+                    <div class="timeline-content">
+                        <h4>Initialize Union-Find</h4>
+                        <p>Create a parent array where each vertex is its own parent. This forms V disjoint sets initially.</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="--dot-color: #fbbf24;">3</div>
+                    <div class="timeline-content">
+                        <h4>Pick Smallest Edge</h4>
+                        <p>Take the next smallest edge. Check if adding it would form a cycle using the <code>find()</code> operation.</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="--dot-color: #34d399;">4</div>
+                    <div class="timeline-content">
+                        <h4>Add or Reject</h4>
+                        <p>If no cycle → add the edge to MST and perform <code>union()</code>. If it forms a cycle → reject it.</p>
+                    </div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot" style="--dot-color: #f87171;">5</div>
+                    <div class="timeline-content">
+                        <h4>Repeat Until Done</h4>
+                        <p>Continue until MST has exactly <strong>V − 1</strong> edges. The total weight of selected edges is the minimum cost.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Complexity Analysis with Bar Chart -->
+        <section id="complexity" class="section">
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2>Complexity Analysis</h2>
+            </div>
+            <div class="complexity-layout">
+                <div class="complexity-chart-container">
+                    <h3>Time Complexity Breakdown</h3>
+                    <div class="bar-chart" id="bar-chart">
+                        <div class="bar-item">
+                            <div class="bar-label">Sorting Edges</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" data-width="85" style="--bar-color: #60a5fa;">O(E log E)</div>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar-label">Find Operations</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" data-width="30" style="--bar-color: #a78bfa;">O(E · α(V))</div>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar-label">Union Operations</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" data-width="25" style="--bar-color: #34d399;">O(V · α(V))</div>
+                            </div>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar-label">Total</div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-total" data-width="90" style="--bar-color: #fbbf24;">O(E log E)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="chart-note">α(V) = Inverse Ackermann function ≈ constant for all practical inputs</p>
+                </div>
+
+                <div class="complexity-cards">
+                    <div class="stat-card">
+                        <div class="stat-card-icon" style="--card-accent: #60a5fa;">⏱</div>
+                        <div class="stat-card-body">
+                            <div class="stat-card-title">Best Case</div>
+                            <div class="stat-card-value">O(E log E)</div>
+                            <div class="stat-card-desc">Same as worst case — sorting dominates</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon" style="--card-accent: #f87171;">⏱</div>
+                        <div class="stat-card-body">
+                            <div class="stat-card-title">Worst Case</div>
+                            <div class="stat-card-value">O(E log E)</div>
+                            <div class="stat-card-desc">Sorting E edges is the bottleneck step</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon" style="--card-accent: #34d399;">💾</div>
+                        <div class="stat-card-body">
+                            <div class="stat-card-title">Space</div>
+                            <div class="stat-card-value">O(V + E)</div>
+                            <div class="stat-card-desc">Parent array (V) + edge list (E)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Comparison Chart -->
+        <section id="comparison" class="section">
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2>Kruskal's vs Prim's — Comparison</h2>
+            </div>
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th class="highlight-col">Kruskal's</th>
+                            <th>Prim's</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Approach</td>
+                            <td class="highlight-col">Edge-based (global)</td>
+                            <td>Vertex-based (local)</td>
+                        </tr>
+                        <tr>
+                            <td>Data Structure</td>
+                            <td class="highlight-col">Union-Find (DSU)</td>
+                            <td>Priority Queue / Min-Heap</td>
+                        </tr>
+                        <tr>
+                            <td>Time Complexity</td>
+                            <td class="highlight-col">O(E log E)</td>
+                            <td>O(E log V)</td>
+                        </tr>
+                        <tr>
+                            <td>Best For</td>
+                            <td class="highlight-col">Sparse graphs (E ≈ V)</td>
+                            <td>Dense graphs (E ≈ V²)</td>
+                        </tr>
+                        <tr>
+                            <td>Works on Disconnected?</td>
+                            <td class="highlight-col">✅ Yes (finds MSF)</td>
+                            <td>❌ No</td>
+                        </tr>
+                        <tr>
+                            <td>Needs Sorting?</td>
+                            <td class="highlight-col">✅ Yes</td>
+                            <td>❌ No</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION: Applications with Radial Chart -->
+        <section id="applications" class="section">
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2>Real-World Applications</h2>
+            </div>
+            <div class="apps-grid">
+                <div class="app-card">
+                    <div class="app-icon">🌐</div>
+                    <h4>Network Design</h4>
+                    <p>Laying cables, optical fiber networks with minimum total wiring cost.</p>
+                    <div class="app-bar" style="--app-pct: 95%; --app-color: #60a5fa;"><span>95% relevance</span></div>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">🗺️</div>
+                    <h4>Road Planning</h4>
+                    <p>Connecting cities with minimum road construction cost.</p>
+                    <div class="app-bar" style="--app-pct: 88%; --app-color: #a78bfa;"><span>88% relevance</span></div>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">🖥️</div>
+                    <h4>Cluster Analysis</h4>
+                    <p>Used in machine learning for single-linkage hierarchical clustering.</p>
+                    <div class="app-bar" style="--app-pct: 80%; --app-color: #34d399;"><span>80% relevance</span></div>
+                </div>
+                <div class="app-card">
+                    <div class="app-icon">💡</div>
+                    <h4>Circuit Design</h4>
+                    <p>Minimizing wire length in VLSI chip layout and PCB routing.</p>
+                    <div class="app-bar" style="--app-pct: 75%; --app-color: #fbbf24;"><span>75% relevance</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Interactive Visualizer -->
+        <section id="visualizer" class="section">
+            <div class="section-header">
+                <span class="section-number">06</span>
+                <h2>Interactive Visualizer</h2>
+            </div>
+
+            <!-- Input Panel -->
+            <div class="panel" id="input-panel">
+                <div class="panel-header">
+                    <h3>📥 Graph Input</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="vertices">Vertices</label>
+                            <input type="number" id="vertices" min="2" max="12" value="5">
+                        </div>
+                        <div class="input-group">
+                            <label for="num-edges">Edges</label>
+                            <input type="number" id="num-edges" min="1" max="30" value="7">
+                        </div>
+                        <button id="btn-generate-fields" class="btn btn-secondary" onclick="generateEdgeInputs()">Generate Fields</button>
+                    </div>
+
+                    <div id="edge-inputs-container" class="edge-inputs-container"></div>
+
+                    <div class="action-row">
+                        <button id="btn-load-sample" class="btn btn-outline" onclick="loadSampleGraph()">Load Sample</button>
+                        <button id="btn-run" class="btn btn-primary" onclick="runKruskal()">▶ Run Kruskal's</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithm Steps -->
+            <div class="panel hidden" id="steps-panel">
+                <div class="panel-header">
+                    <h3>⚡ Algorithm Execution</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="sorted-edges" class="sorted-edges-section">
+                        <h4>Sorted Edges (by weight)</h4>
+                        <div id="sorted-edges-list" class="edge-chips"></div>
+                    </div>
+                    <div id="steps-log" class="steps-log"></div>
+                    <div id="result-box" class="result-box hidden">
+                        <div class="result-label">Minimum Cost of MST</div>
+                        <div id="result-cost" class="result-cost">0</div>
+                    </div>
+
+                    <!-- Live Stats during run -->
+                    <div id="live-stats" class="live-stats hidden">
+                        <div class="live-stat">
+                            <span class="live-stat-num" id="stat-processed">0</span>
+                            <span class="live-stat-label">Edges Processed</span>
+                        </div>
+                        <div class="live-stat">
+                            <span class="live-stat-num" id="stat-accepted">0</span>
+                            <span class="live-stat-label">Accepted</span>
+                        </div>
+                        <div class="live-stat">
+                            <span class="live-stat-num" id="stat-rejected">0</span>
+                            <span class="live-stat-label">Rejected (Cycle)</span>
+                        </div>
+                        <div class="live-stat">
+                            <span class="live-stat-num" id="stat-components">0</span>
+                            <span class="live-stat-label">Components Left</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graph Canvas -->
+            <div class="panel hidden" id="graph-panel">
+                <div class="panel-header">
+                    <h3>🔗 Graph Visualization</h3>
+                </div>
+                <div class="panel-body canvas-body">
+                    <div class="canvas-legend">
+                        <span class="legend-item"><span class="legend-dot dot-default"></span> Normal Edge</span>
+                        <span class="legend-item"><span class="legend-dot dot-mst"></span> MST Edge</span>
+                        <span class="legend-item"><span class="legend-dot dot-rejected"></span> Rejected (Cycle)</span>
+                    </div>
+                    <canvas id="graph-canvas" width="700" height="450"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer id="app-footer">
+        <p>Kruskal's MST Algorithm — Lab Program Visualizer & Explanation</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
