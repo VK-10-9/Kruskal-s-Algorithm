@@ -517,7 +517,61 @@
                         <button id="btn-apply-preset" class="btn btn-outline" onclick="applyPreset()">Apply Preset</button>
                     </div>
 
+                    <div class="tool-row">
+                        <div class="input-group">
+                            <label for="algo-select">Algorithm</label>
+                            <select id="algo-select" aria-label="Select algorithm">
+                                <option value="kruskal">Kruskal</option>
+                                <option value="prim">Prim</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="prim-start">Prim Start</label>
+                            <input type="number" id="prim-start" min="0" value="0" aria-label="Prim start node">
+                            <small>Used for Prim only</small>
+                        </div>
+                        <button id="btn-compare" class="btn btn-outline" onclick="compareAlgorithms()">Compare</button>
+                        <div class="toggle-group">
+                            <label class="toggle"><input type="checkbox" id="performance-toggle"> Performance Mode</label>
+                            <label class="toggle"><input type="checkbox" id="presentation-toggle"> Presentation Mode</label>
+                        </div>
+                    </div>
+
                     <div id="edge-inputs-container" class="edge-inputs-container"></div>
+
+                    <div class="builder-panel">
+                        <div class="builder-header">Builder Tools</div>
+                        <div class="builder-controls">
+                            <button class="btn btn-outline" data-builder="select" onclick="setBuilderMode('select')">Select</button>
+                            <button class="btn btn-outline" data-builder="node" onclick="setBuilderMode('node')">Add Node</button>
+                            <button class="btn btn-outline" data-builder="edge" onclick="setBuilderMode('edge')">Add Edge</button>
+                            <button class="btn btn-outline" onclick="undoBuilder()">Undo</button>
+                            <button class="btn btn-outline" onclick="clearBuilder()">Clear</button>
+                        </div>
+                        <div class="builder-hint">Canvas interactions: click to add nodes, click two nodes to create an edge, click a label to edit weight.</div>
+                    </div>
+
+                    <div class="validation-panel" id="validation-panel">
+                        <div class="validation-title">Graph Checks</div>
+                        <ul class="validation-list" id="validation-list"></ul>
+                    </div>
+
+                    <div class="export-panel">
+                        <button class="btn btn-outline" onclick="copyShareLink()">Copy Share Link</button>
+                        <button class="btn btn-outline" onclick="exportJson()">Export JSON</button>
+                        <button class="btn btn-outline" onclick="toggleImportPanel()">Import JSON</button>
+                        <button class="btn btn-outline" onclick="exportPng()">Download PNG</button>
+                        <button class="btn btn-outline" onclick="savePreset()">Save Preset</button>
+                        <button class="btn btn-outline" onclick="loadPreset()">Load Preset</button>
+                    </div>
+
+                    <div class="import-panel hidden" id="import-panel">
+                        <textarea id="import-text" rows="6" placeholder="Paste graph JSON here"></textarea>
+                        <div class="import-actions">
+                            <button class="btn btn-primary" onclick="applyImportJson()">Apply</button>
+                            <button class="btn btn-outline" onclick="toggleImportPanel()">Cancel</button>
+                        </div>
+                    </div>
 
                     <div class="action-row">
                         <button id="btn-load-sample" class="btn btn-outline" onclick="loadSampleGraph()">Load Sample</button>
@@ -548,6 +602,11 @@
                         </div>
                         <div class="key-hint">Shortcuts: Space = Play/Pause, → = Step, R = Reset</div>
                     </div>
+                    <div class="guide-row">
+                        <label class="toggle"><input type="checkbox" id="guide-toggle"> Guided Walkthrough</label>
+                        <div id="guide-box" class="guide-box">Enable guided mode to see step explanations.</div>
+                    </div>
+                    <div id="compare-box" class="compare-box hidden"></div>
                     <div id="steps-log" class="steps-log"></div>
                     <div id="result-box" class="result-box hidden">
                         <div id="result-label" class="result-label">Minimum Cost of MST</div>

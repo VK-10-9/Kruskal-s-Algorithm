@@ -1029,6 +1029,28 @@ body::before {
     display: block;
 }
 
+.tool-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.toggle-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.toggle input {
+    margin-right: 6px;
+    accent-color: var(--accent-blue);
+}
+
 .input-group input:focus {
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 3px rgba(96,165,250,0.12);
@@ -1049,6 +1071,114 @@ body::before {
     max-height: 280px;
     overflow-y: auto;
     padding-right: 4px;
+}
+
+.builder-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.builder-header {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.builder-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.builder-controls .btn {
+    min-width: 92px;
+}
+
+.builder-controls .btn.active {
+    border-color: rgba(56, 189, 248, 0.4);
+    color: var(--text-primary);
+    background: rgba(56, 189, 248, 0.12);
+}
+
+.builder-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.validation-panel {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.validation-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.validation-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.validation-list li.ok {
+    color: var(--accent-green);
+}
+
+.validation-list li.warn {
+    color: var(--accent-orange);
+}
+
+.validation-list li.err {
+    color: var(--accent-red);
+}
+
+.export-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.import-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 10px;
+}
+
+.import-panel textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+}
+
+.import-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .edge-inputs-container::-webkit-scrollbar { width: 4px; }
@@ -1224,6 +1354,34 @@ body::before {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border);
     margin-bottom: 16px;
+}
+
+.guide-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.guide-box {
+    flex: 1 1 260px;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.compare-box {
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .playback-controls .btn {
@@ -1410,6 +1568,20 @@ body::before {
     box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.08);
 }
 
+/* ====== PRESENTATION MODE ====== */
+body.presentation .top-nav,
+body.presentation #app-footer {
+    display: none;
+}
+
+body.presentation #app-main {
+    max-width: 1200px;
+}
+
+body.presentation #hero {
+    padding-top: 40px;
+}
+
 /* ====== FOOTER ====== */
 #app-footer {
     text-align: center;
@@ -1490,6 +1662,11 @@ body::before {
         align-items: stretch;
     }
 
+    .tool-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
     .input-group select {
         width: 100%;
     }
@@ -1497,6 +1674,10 @@ body::before {
     .playback-controls {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .export-panel {
+        flex-direction: column;
     }
 
     .key-hint {

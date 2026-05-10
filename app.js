@@ -32,13 +32,27 @@ let runState = {
     running: false,
     paused: false,
     stepIndex: 0,
-    currentEdgeIndex: null,
+    currentEdge: null,
+    steps: [],
     minCost: 0,
     accepted: 0,
     rejected: 0,
     speedMs: 700,
     timerId: null,
     decisionId: null,
+};
+
+let uiState = {
+    algorithm: 'kruskal',
+    performance: false,
+    presentation: false,
+    guided: false,
+    builder: {
+        mode: 'select',
+        positions: [],
+        selectedNode: null,
+        history: [],
+    },
 };
 
 const PRESETS = {
@@ -143,6 +157,12 @@ function animateBarChart() {
 function initControls() {
     const speedRange = document.getElementById('speed-range');
     const speedValue = document.getElementById('speed-value');
+    const algoSelect = document.getElementById('algo-select');
+    const primStart = document.getElementById('prim-start');
+    const performanceToggle = document.getElementById('performance-toggle');
+    const presentationToggle = document.getElementById('presentation-toggle');
+    const guideToggle = document.getElementById('guide-toggle');
+    const canvas = document.getElementById('graph-canvas');
 
     if (speedRange && speedValue) {
         runState.speedMs = parseInt(speedRange.value, 10);
@@ -152,6 +172,53 @@ function initControls() {
             speedValue.textContent = `${runState.speedMs} ms`;
         });
     }
+
+    if (algoSelect) {
+        uiState.algorithm = algoSelect.value;
+        algoSelect.addEventListener('change', () => {
+            uiState.algorithm = algoSelect.value;
+            updateValidationSummary();
+        });
+    }
+
+    if (primStart) {
+        primStart.addEventListener('input', () => {
+            updateValidationSummary();
+        });
+    }
+
+    if (performanceToggle) {
+        performanceToggle.addEventListener('change', () => {
+            uiState.performance = performanceToggle.checked;
+            drawGraph();
+        });
+    }
+
+    if (presentationToggle) {
+        presentationToggle.addEventListener('change', () => {
+            uiState.presentation = presentationToggle.checked;
+            document.body.classList.toggle('presentation', uiState.presentation);
+            if (uiState.presentation && document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else if (!uiState.presentation && document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
+    }
+
+    if (guideToggle) {
+        guideToggle.addEventListener('change', () => {
+            uiState.guided = guideToggle.checked;
+            updateGuideBox('Enable guided mode to see step explanations.');
+        });
+    }
+
+    if (canvas) {
+        canvas.addEventListener('click', handleCanvasClick);
+    }
+
+    loadFromUrl();
+    updateValidationSummary();
 
     updateControlButtons();
 
@@ -240,6 +307,380 @@ function applyPreset() {
     if (graphPanel) graphPanel.classList.add('hidden');
 }
 
+// -------- BUILDER TOOLS --------
+function setBuilderMode(mode) {
+    uiState.builder.mode = mode;
+    uiState.builder.selectedNode = null;
+    const buttons = document.querySelectorAll('[data-builder]');
+    buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-builder') === mode);
+    });
+}
+
+function undoBuilder() {
+    const action = uiState.builder.history.pop();
+    if (!action) return;
+    if (action.type === 'node') {
+        uiState.builder.positions.pop();
+    } else if (action.type === 'edge') {
+        edgesData.pop();
+    }
+    syncBuilderToInputs();
+    drawGraph();
+    updateValidationSummary();
+}
+
+function clearBuilder() {
+    uiState.builder.positions = [];
+    uiState.builder.selectedNode = null;
+    uiState.builder.history = [];
+    edgesData = [];
+    syncBuilderToInputs();
+    drawGraph();
+    updateValidationSummary();
+}
+
+function handleCanvasClick(event) {
+    const canvas = event.currentTarget;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (uiState.builder.mode === 'node') {
+        addBuilderNode(x, y);
+        return;
+    }
+
+    const hitNode = getNodeAtPoint(x, y);
+    const hitEdge = getEdgeAtPoint(x, y);
+
+    if (uiState.builder.mode === 'edge') {
+        if (hitNode === null) return;
+        if (uiState.builder.selectedNode === null) {
+            uiState.builder.selectedNode = hitNode;
+            return;
+        }
+        if (uiState.builder.selectedNode === hitNode) return;
+        addBuilderEdge(uiState.builder.selectedNode, hitNode);
+        uiState.builder.selectedNode = null;
+        return;
+    }
+
+    if (uiState.builder.mode === 'select') {
+        if (hitEdge) {
+            const newWeight = prompt('Edit weight:', String(hitEdge.weight));
+            const weightVal = parseInt(newWeight, 10);
+            if (!isNaN(weightVal) && weightVal > 0) {
+                hitEdge.weight = weightVal;
+                syncBuilderToInputs();
+                drawGraph();
+                updateValidationSummary();
+            }
+            return;
+        }
+    }
+}
+
+function addBuilderNode(x, y) {
+    uiState.builder.positions.push({ x, y });
+    uiState.builder.history.push({ type: 'node' });
+    syncBuilderToInputs();
+    drawGraph();
+    updateValidationSummary();
+}
+
+function addBuilderEdge(u, v) {
+    const weightInput = prompt('Edge weight:', '1');
+    const weight = parseInt(weightInput, 10);
+    if (isNaN(weight) || weight <= 0) return;
+    edgesData.push({ u, v, weight });
+    uiState.builder.history.push({ type: 'edge' });
+    syncBuilderToInputs();
+    drawGraph();
+    updateValidationSummary();
+}
+
+function syncBuilderToInputs() {
+    if (!uiState.builder.positions.length) return;
+    numVertices = uiState.builder.positions.length;
+    numEdges = edgesData.length;
+
+    document.getElementById('vertices').value = numVertices;
+    document.getElementById('num-edges').value = numEdges;
+    generateEdgeInputs();
+
+    edgesData.forEach((edge, i) => {
+        const uField = document.getElementById(`eu-${i}`);
+        const vField = document.getElementById(`ev-${i}`);
+        const wField = document.getElementById(`ew-${i}`);
+        if (!uField || !vField || !wField) return;
+        uField.value = edge.u;
+        vField.value = edge.v;
+        wField.value = edge.weight;
+    });
+}
+
+function getNodeAtPoint(x, y) {
+    const positions = getNodePositions();
+    const radius = 18;
+    for (let i = 0; i < positions.length; i++) {
+        const dx = positions[i].x - x;
+        const dy = positions[i].y - y;
+        if (Math.sqrt(dx * dx + dy * dy) <= radius) return i;
+    }
+    return null;
+}
+
+function getEdgeAtPoint(x, y) {
+    const positions = getNodePositions();
+    let closest = null;
+    let closestDist = 9999;
+    edgesData.forEach(edge => {
+        const from = positions[edge.u];
+        const to = positions[edge.v];
+        if (!from || !to) return;
+        const mx = (from.x + to.x) / 2;
+        const my = (from.y + to.y) / 2;
+        const dx = mx - x;
+        const dy = my - y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 14 && dist < closestDist) {
+            closestDist = dist;
+            closest = edge;
+        }
+    });
+    return closest;
+}
+
+function getNodePositions() {
+    if (uiState.builder.positions.length === numVertices && uiState.builder.positions.length > 0) {
+        return uiState.builder.positions;
+    }
+
+    const canvas = document.getElementById('graph-canvas');
+    if (!canvas) return [];
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const rad = Math.min(cx, cy) - 60;
+    const positions = [];
+    for (let i = 0; i < numVertices; i++) {
+        const angle = (2 * Math.PI * i) / numVertices - Math.PI / 2;
+        positions.push({
+            x: cx + rad * Math.cos(angle),
+            y: cy + rad * Math.sin(angle),
+        });
+    }
+    return positions;
+}
+
+// -------- EXPORT / IMPORT --------
+function serializeGraph() {
+    return {
+        vertices: numVertices,
+        edges: edgesData.map(edge => [edge.u, edge.v, edge.weight]),
+    };
+}
+
+function applyGraphData(data) {
+    if (!data || !Array.isArray(data.edges)) return;
+    uiState.builder.positions = [];
+    document.getElementById('vertices').value = data.vertices || 0;
+    document.getElementById('num-edges').value = data.edges.length;
+    generateEdgeInputs();
+
+    edgesData = [];
+    data.edges.forEach((edge, i) => {
+        const u = edge[0];
+        const v = edge[1];
+        const w = edge[2];
+        edgesData.push({ u, v, weight: w });
+        const uField = document.getElementById(`eu-${i}`);
+        const vField = document.getElementById(`ev-${i}`);
+        const wField = document.getElementById(`ew-${i}`);
+        if (!uField || !vField || !wField) return;
+        uField.value = u;
+        vField.value = v;
+        wField.value = w;
+    });
+
+    drawGraph();
+    updateValidationSummary();
+}
+
+function copyShareLink() {
+    const payload = encodeURIComponent(JSON.stringify(serializeGraph()));
+    const url = `${window.location.origin}${window.location.pathname}?graph=${payload}`;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Share link copied.');
+    });
+}
+
+function exportJson() {
+    const data = JSON.stringify(serializeGraph(), null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'kruskal-graph.json';
+    anchor.click();
+    URL.revokeObjectURL(url);
+}
+
+function toggleImportPanel() {
+    const panel = document.getElementById('import-panel');
+    if (!panel) return;
+    panel.classList.toggle('hidden');
+}
+
+function applyImportJson() {
+    const text = document.getElementById('import-text').value.trim();
+    if (!text) return;
+    try {
+        const data = JSON.parse(text);
+        applyGraphData(data);
+        toggleImportPanel();
+    } catch (error) {
+        alert('Invalid JSON.');
+    }
+}
+
+function exportPng() {
+    const canvas = document.getElementById('graph-canvas');
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'kruskal-graph.png';
+    anchor.click();
+}
+
+function savePreset() {
+    const name = prompt('Preset name:');
+    if (!name) return;
+    const data = serializeGraph();
+    const presets = JSON.parse(localStorage.getItem('customPresets') || '{}');
+    presets[name] = data;
+    localStorage.setItem('customPresets', JSON.stringify(presets));
+    alert('Preset saved.');
+}
+
+function loadPreset() {
+    const presets = JSON.parse(localStorage.getItem('customPresets') || '{}');
+    const names = Object.keys(presets);
+    if (!names.length) {
+        alert('No saved presets found.');
+        return;
+    }
+    const name = prompt(`Available presets: ${names.join(', ')}\nEnter preset name:`);
+    if (!name || !presets[name]) return;
+    applyGraphData(presets[name]);
+}
+
+function loadFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const graph = params.get('graph');
+    if (!graph) return;
+    try {
+        const data = JSON.parse(decodeURIComponent(graph));
+        applyGraphData(data);
+    } catch (error) {
+        console.warn('Invalid graph data in URL');
+    }
+}
+
+// -------- VALIDATION & COMPARISON --------
+function updateValidationSummary() {
+    const list = document.getElementById('validation-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!edgesData.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No edges provided.';
+        li.className = 'warn';
+        list.appendChild(li);
+        return;
+    }
+
+    const vertexCount = parseInt(document.getElementById('vertices').value, 10) || numVertices;
+    const duplicateSet = new Set();
+    let duplicates = 0;
+    edgesData.forEach(edge => {
+        const key = [Math.min(edge.u, edge.v), Math.max(edge.u, edge.v)].join('-');
+        if (duplicateSet.has(key)) duplicates++;
+        duplicateSet.add(key);
+    });
+
+    const components = getComponentsCount(vertexCount, edgesData);
+    const items = [];
+
+    items.push({
+        text: components === 1 ? 'Connected graph' : `Disconnected graph (${components} components)`,
+        level: components === 1 ? 'ok' : 'warn',
+    });
+
+    items.push({
+        text: duplicates > 0 ? `${duplicates} duplicate edge(s) found` : 'No duplicate edges',
+        level: duplicates > 0 ? 'warn' : 'ok',
+    });
+
+    items.push({
+        text: `Edges: ${edgesData.length}, Vertices: ${vertexCount}`,
+        level: 'ok',
+    });
+
+    items.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.text;
+        li.className = item.level;
+        list.appendChild(li);
+    });
+}
+
+function getComponentsCount(vertexCount, edges) {
+    const adj = Array.from({ length: vertexCount }, () => []);
+    edges.forEach(edge => {
+        if (edge.u >= vertexCount || edge.v >= vertexCount) return;
+        adj[edge.u].push(edge.v);
+        adj[edge.v].push(edge.u);
+    });
+
+    const visited = new Array(vertexCount).fill(false);
+    let components = 0;
+    for (let i = 0; i < vertexCount; i++) {
+        if (visited[i]) continue;
+        components++;
+        const stack = [i];
+        visited[i] = true;
+        while (stack.length) {
+            const node = stack.pop();
+            adj[node].forEach(next => {
+                if (!visited[next]) {
+                    visited[next] = true;
+                    stack.push(next);
+                }
+            });
+        }
+    }
+    return components;
+}
+
+function compareAlgorithms() {
+    if (!edgesData.length) return;
+    const comparison = document.getElementById('compare-box');
+    if (!comparison) return;
+
+    const kruskalResult = computeKruskalResult(edgesData, numVertices);
+    const primStart = parseInt(document.getElementById('prim-start').value, 10) || 0;
+    const primResult = computePrimResult(edgesData, numVertices, primStart);
+
+    comparison.classList.remove('hidden');
+    comparison.textContent = `Kruskal: cost ${kruskalResult.cost}, edges ${kruskalResult.edges}. Prim: cost ${primResult.cost}, edges ${primResult.edges}.`;
+}
+
 // -------- VALIDATE INPUT --------
 function validateInput(vertices, edges) {
     const errors = [];
@@ -312,6 +753,7 @@ function generateEdgeInputs() {
  * Sample: 6 vertices with 9 edges for learning purposes
  */
 function loadSampleGraph() {
+    uiState.builder.positions = [];
     document.getElementById('vertices').value = 6;
     document.getElementById('num-edges').value = 9;
     generateEdgeInputs();
@@ -327,6 +769,87 @@ function loadSampleGraph() {
         document.getElementById(`ev-${i}`).value = edge[1];
         document.getElementById(`ew-${i}`).value = edge[2];
     });
+}
+
+// -------- STEP BUILDERS --------
+function buildKruskalSteps(edges, vertices) {
+    const steps = [];
+    const parent = Array.from({ length: vertices }, (_, i) => i);
+
+    function findLocal(i) {
+        if (parent[i] !== i) parent[i] = findLocal(parent[i]);
+        return parent[i];
+    }
+
+    function unionLocal(u, v) {
+        const ru = findLocal(u);
+        const rv = findLocal(v);
+        if (ru !== rv) parent[rv] = ru;
+    }
+
+    const sorted = [...edges].sort((a, b) => a.weight - b.weight);
+    sorted.forEach(edge => {
+        if (findLocal(edge.u) !== findLocal(edge.v)) {
+            unionLocal(edge.u, edge.v);
+            steps.push({ edge, action: 'accept' });
+        } else {
+            steps.push({ edge, action: 'reject' });
+        }
+    });
+    return steps;
+}
+
+function buildPrimSteps(edges, vertices, start) {
+    const steps = [];
+    const visited = new Set();
+    const safeStart = Math.max(0, Math.min(vertices - 1, start));
+    visited.add(safeStart);
+
+    while (visited.size < vertices) {
+        let best = null;
+        edges.forEach(edge => {
+            const inU = visited.has(edge.u);
+            const inV = visited.has(edge.v);
+            if (inU === inV) return;
+            if (!best || edge.weight < best.weight) {
+                best = edge;
+            }
+        });
+        if (!best) break;
+        steps.push({ edge: best, action: 'accept' });
+        visited.add(best.u);
+        visited.add(best.v);
+    }
+
+    return steps;
+}
+
+function computeKruskalResult(edges, vertices) {
+    const steps = buildKruskalSteps(edges, vertices);
+    let cost = 0;
+    let count = 0;
+    steps.forEach(step => {
+        if (step.action === 'accept') {
+            cost += step.edge.weight;
+            count++;
+        }
+    });
+    return { cost, edges: count };
+}
+
+function computePrimResult(edges, vertices, start) {
+    const steps = buildPrimSteps(edges, vertices, start);
+    let cost = 0;
+    steps.forEach(step => {
+        cost += step.edge.weight;
+    });
+    return { cost, edges: steps.length };
+}
+
+function updateGuideBox(text) {
+    const guideBox = document.getElementById('guide-box');
+    if (!guideBox) return;
+    guideBox.textContent = uiState.guided ? text : 'Enable guided mode to see step explanations.';
 }
 
 // -------- UNION-FIND --------
@@ -369,6 +892,8 @@ function runKruskal() {
     try {
         numVertices = parseInt(document.getElementById('vertices').value) || 5;
         numEdges = parseInt(document.getElementById('num-edges').value) || 7;
+        const algoSelect = document.getElementById('algo-select');
+        if (algoSelect) uiState.algorithm = algoSelect.value;
 
         // Validate inputs
         const errors = validateInput(numVertices, numEdges);
@@ -434,11 +959,15 @@ function runKruskal() {
             return;
         }
 
-        // Sort by weight
-        edgesData.sort((a, b) => a.weight - b.weight);
+        const primStart = parseInt(document.getElementById('prim-start').value, 10) || 0;
+        runState.steps = uiState.algorithm === 'prim'
+            ? buildPrimSteps(edgesData, numVertices, primStart)
+            : buildKruskalSteps(edgesData, numVertices);
 
         initializeRun();
         startRun();
+
+        updateValidationSummary();
 
         // Smooth scroll to steps
         document.getElementById('steps-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -456,7 +985,9 @@ function runKruskal() {
 function renderSortedChips() {
     const container = document.getElementById('sorted-edges-list');
     container.innerHTML = '';
-    edgesData.forEach((edge, i) => {
+    const steps = runState.steps.length ? runState.steps : edgesData.map(edge => ({ edge }));
+    steps.forEach((step, i) => {
+        const edge = step.edge;
         const chip = document.createElement('span');
         chip.classList.add('edge-chip');
         chip.id = `chip-${i}`;
@@ -480,7 +1011,10 @@ function initializeRun() {
     runState.running = false;
     runState.paused = false;
     runState.stepIndex = 0;
-    runState.currentEdgeIndex = null;
+    runState.currentEdge = null;
+    if (!runState.steps.length) {
+        runState.steps = buildKruskalSteps(edgesData, numVertices);
+    }
     runState.minCost = 0;
     runState.accepted = 0;
     runState.rejected = 0;
@@ -505,6 +1039,7 @@ function initializeRun() {
 
     drawGraph();
     updateControlButtons();
+    updateGuideBox('Enable guided mode to see step explanations.');
 }
 
 function startRun() {
@@ -547,7 +1082,7 @@ function resetRun() {
     runState.running = false;
     runState.paused = false;
     runState.stepIndex = 0;
-    runState.currentEdgeIndex = null;
+    runState.currentEdge = null;
     runState.minCost = 0;
     runState.accepted = 0;
     runState.rejected = 0;
@@ -593,19 +1128,20 @@ function finalizeRun() {
 
     runState.running = false;
     runState.paused = false;
-    runState.currentEdgeIndex = null;
+    runState.currentEdge = null;
     updateControlButtons();
     drawGraph();
 }
 
 function processStep() {
-    if (runState.stepIndex >= edgesData.length) {
+    if (runState.stepIndex >= runState.steps.length) {
         finalizeRun();
         return;
     }
 
-    const edge = edgesData[runState.stepIndex];
-    runState.currentEdgeIndex = runState.stepIndex;
+    const step = runState.steps[runState.stepIndex];
+    const edge = step.edge;
+    runState.currentEdge = edge;
     const chip = document.getElementById(`chip-${runState.stepIndex}`);
     const log = document.getElementById('steps-log');
     const decisionDelay = Math.min(180, Math.max(80, runState.speedMs * 0.25));
@@ -615,7 +1151,7 @@ function processStep() {
     runState.decisionId = setTimeout(() => {
         document.getElementById('stat-processed').textContent = runState.stepIndex + 1;
 
-        if (find(edge.u) !== find(edge.v)) {
+        if (step.action === 'accept') {
             unionSet(edge.u, edge.v);
             mstEdges.push(edge);
             runState.minCost += edge.weight;
@@ -632,6 +1168,13 @@ function processStep() {
             entry.classList.add('step-entry', 'accepted');
             entry.innerHTML = `<span class="step-icon">OK</span><span class="step-text">Edge (${edge.u}, ${edge.v}) w=${edge.weight} — Added to MST</span>`;
             log.appendChild(entry);
+
+            if (uiState.guided) {
+                const algoText = uiState.algorithm === 'prim'
+                    ? 'Prim selects the lightest edge crossing from visited to unvisited.'
+                    : 'Kruskal picks the lightest edge that does not create a cycle.';
+                updateGuideBox(`${algoText} Accepted edge (${edge.u}, ${edge.v}) with weight ${edge.weight}.`);
+            }
         } else {
             rejectedEdges.push(edge);
             runState.rejected++;
@@ -647,14 +1190,18 @@ function processStep() {
             entry.classList.add('step-entry', 'rejected');
             entry.innerHTML = `<span class="step-icon">X</span><span class="step-text">Edge (${edge.u}, ${edge.v}) w=${edge.weight} — Rejected (cycle)</span>`;
             log.appendChild(entry);
+
+            if (uiState.guided) {
+                updateGuideBox(`Rejected edge (${edge.u}, ${edge.v}) with weight ${edge.weight}. It forms a cycle.`);
+            }
         }
 
         document.getElementById('stat-components').textContent = countComponents();
         drawGraph();
 
         runState.stepIndex++;
-        runState.currentEdgeIndex = runState.stepIndex < edgesData.length
-            ? runState.stepIndex
+        runState.currentEdge = runState.stepIndex < runState.steps.length
+            ? runState.steps[runState.stepIndex].edge
             : null;
         if (runState.running && !runState.paused) {
             scheduleNextStep();
@@ -684,38 +1231,29 @@ function drawGraph() {
 
     const w = rect.width;
     const h = rect.height;
-    const cx = w / 2;
-    const cy = h / 2;
-    const rad = Math.min(cx, cy) - 60;
-
-    const positions = [];
-    for (let i = 0; i < numVertices; i++) {
-        const angle = (2 * Math.PI * i) / numVertices - Math.PI / 2;
-        positions.push({
-            x: cx + rad * Math.cos(angle),
-            y: cy + rad * Math.sin(angle),
-        });
-    }
+    const positions = getNodePositions();
 
     ctx.clearRect(0, 0, w, h);
 
-    // Blueprint grid overlay
-    ctx.save();
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
-    ctx.lineWidth = 1;
-    for (let x = 20; x < w; x += 25) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
+    if (!uiState.performance) {
+        // Blueprint grid overlay
+        ctx.save();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+        ctx.lineWidth = 1;
+        for (let x = 20; x < w; x += 25) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+        }
+        for (let y = 20; y < h; y += 25) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+        ctx.restore();
     }
-    for (let y = 20; y < h; y += 25) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
-    }
-    ctx.restore();
 
     const weights = edgesData.map(edge => edge.weight);
     const weightMin = weights.length ? Math.min(...weights) : 0;
@@ -759,7 +1297,7 @@ function drawGraph() {
     }
 
     // All edges — base layer
-    edgesData.forEach((edge, index) => {
+    edgesData.forEach((edge) => {
         const from = positions[edge.u];
         const to = positions[edge.v];
         if (!from || !to) return;
@@ -773,9 +1311,11 @@ function drawGraph() {
 
         const mx = (from.x + to.x) / 2;
         const my = (from.y + to.y) / 2;
-        drawWeightLabel(mx, my - 10, String(edge.weight), '#94a3b8', 'rgba(8, 12, 24, 0.7)');
+        if (!uiState.performance) {
+            drawWeightLabel(mx, my - 10, String(edge.weight), '#94a3b8', 'rgba(8, 12, 24, 0.7)');
+        }
 
-        if (runState.currentEdgeIndex === index) {
+        if (runState.currentEdge === edge) {
             ctx.save();
             ctx.strokeStyle = 'rgba(34, 211, 238, 0.8)';
             ctx.lineWidth = edgeWidth(edge.weight) + 2;
@@ -806,7 +1346,9 @@ function drawGraph() {
 
         const mx = (from.x + to.x) / 2;
         const my = (from.y + to.y) / 2;
-        drawWeightLabel(mx, my - 8, String(edge.weight), '#f87171', 'rgba(16, 5, 7, 0.7)');
+        if (!uiState.performance) {
+            drawWeightLabel(mx, my - 8, String(edge.weight), '#f87171', 'rgba(16, 5, 7, 0.7)');
+        }
     });
 
     // MST edges — glowing green
@@ -815,13 +1357,15 @@ function drawGraph() {
         const to = positions[edge.v];
         if (!from || !to) return;
 
-        // Glow
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.strokeStyle = 'rgba(52, 211, 153, 0.18)';
-        ctx.lineWidth = edgeWidth(edge.weight) + 8;
-        ctx.stroke();
+        if (!uiState.performance) {
+            // Glow
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.strokeStyle = 'rgba(52, 211, 153, 0.18)';
+            ctx.lineWidth = edgeWidth(edge.weight) + 8;
+            ctx.stroke();
+        }
 
         // Line
         ctx.beginPath();
@@ -833,7 +1377,9 @@ function drawGraph() {
 
         const mx = (from.x + to.x) / 2;
         const my = (from.y + to.y) / 2;
-        drawWeightLabel(mx, my - 12, String(edge.weight), '#34d399', 'rgba(5, 12, 10, 0.8)');
+        if (!uiState.performance) {
+            drawWeightLabel(mx, my - 12, String(edge.weight), '#34d399', 'rgba(5, 12, 10, 0.8)');
+        }
     });
 
     // Vertices
@@ -850,9 +1396,11 @@ function drawGraph() {
         ctx.fillStyle = glowColor;
         ctx.fill();
 
-        ctx.save();
-        ctx.shadowColor = 'rgba(56, 189, 248, 0.25)';
-        ctx.shadowBlur = 12;
+        if (!uiState.performance) {
+            ctx.save();
+            ctx.shadowColor = 'rgba(56, 189, 248, 0.25)';
+            ctx.shadowBlur = 12;
+        }
 
         // Node
         ctx.beginPath();
@@ -863,7 +1411,9 @@ function drawGraph() {
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        ctx.restore();
+        if (!uiState.performance) {
+            ctx.restore();
+        }
 
         // Label
         ctx.fillStyle = '#f1f5f9';
